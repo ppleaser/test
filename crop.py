@@ -889,8 +889,6 @@ SECRET_KEY = b'shared_secret_key'
 TIME_THRESHOLD = 10 
 
 # Функция для валидации ключа
-
-# Функция для валидации ключа
 def validate_key(provided_key, provided_hmac, timestamp):
     try:
         current_time = int(time.time())  # Текущее время в секундах
@@ -914,7 +912,7 @@ if __name__ == '__main__':
         provided_key = sys.argv[1]
         provided_hmac = sys.argv[2]
         timestamp = sys.argv[3]
-
+        print(f"Полученные параметры: key = {provided_key}, hmac = {provided_hmac}, timestamp = {timestamp}")
         if not validate_key(provided_key, provided_hmac, timestamp):
             print("Ключ не валиден. Запустите скрипт через main")
             sys.exit(1)
