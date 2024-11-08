@@ -886,7 +886,7 @@ def run_batch_file():
     return
 
 SECRET_KEY = b'shared_secret_key'
-TIME_THRESHOLD = 10 
+TIME_THRESHOLD = 5
 
 # Функция для валидации ключа
 def validate_key(provided_key, provided_hmac, timestamp):
@@ -899,8 +899,7 @@ def validate_key(provided_key, provided_hmac, timestamp):
         # Генерация HMAC и сравнение с предоставленным HMAC
         expected_hmac = hmac.new(SECRET_KEY, (provided_key + str(timestamp)).encode(), hashlib.sha256).hexdigest()
         return hmac.compare_digest(expected_hmac, provided_hmac)
-    except Exception as e:
-        print(f"Ошибка проверки: {e}")
+    except Exception:
         return False
 
 if __name__ == '__main__':
@@ -912,9 +911,8 @@ if __name__ == '__main__':
         provided_key = sys.argv[1]
         provided_hmac = sys.argv[2]
         timestamp = sys.argv[3]
-        print(f"Полученные параметры: key = {provided_key}, hmac = {provided_hmac}, timestamp = {timestamp}")
         if not validate_key(provided_key, provided_hmac, timestamp):
-            print("Ключ не валиден. Запустите скрипт через main")
+            print("...")
             sys.exit(1)
 
         flask_thread = threading.Thread(target=run_flask_app)
