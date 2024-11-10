@@ -145,7 +145,7 @@ def delete_files_py():
     except Exception as e:
         print(f"Произошла ошибка: {e}")
         return
-    
+
 @app.route('/open-folder', methods=['POST'])
 def open_folder():
     try:
@@ -202,7 +202,7 @@ def write_files():
         return jsonify(message='Sending files...')
     except Exception as e:
          return jsonify(message=str(e))
-     
+
 @app.route('/delete-files', methods=['POST'])
 def delete_files():
     try:
@@ -215,7 +215,7 @@ def delete_files():
         return jsonify(message='All files deleted')
     except Exception:
         return jsonify()
-    
+
 
 switch = False
 
@@ -338,7 +338,7 @@ async def process_message(message, message_index):
                         temp_video_path = f'images/{uuid.uuid4()}_temp_video.mp4'
                         with open(temp_video_path, 'wb') as temp_video_file:
                             temp_video_file.write(media_data.getvalue())
-                         
+
                         clip = VideoFileClip(temp_video_path)
 
                         trimmed_clip = clip.subclip(0, clip.duration - 1) if clip.duration > 1 else clip
@@ -366,11 +366,11 @@ async def process_message(message, message_index):
 
                         if message.text:
                             write_to_output(message, output_file, output_main_file)
-                            
+
                         if os.path.exists(temp_video_path):
                             os.remove(temp_video_path)
                         return  # Остановка обработки для этого сообщения
-                    
+
                     elif message.media and hasattr(message.media, 'document') and message.media.document:
                         document = message.media.document
                         if document.mime_type == 'image/gif':
@@ -406,12 +406,12 @@ async def process_message(message, message_index):
 
                             if message.text:
                                 write_to_output(message, output_file, output_main_file)
-                                
+
                             if os.path.exists(gif_path):
                                 os.remove(gif_path)
 
                             return  
-                        
+
 
             # Handle images
             media_data = await message.download_media(file=BytesIO())
@@ -436,7 +436,7 @@ async def process_message(message, message_index):
                 f.write(f'</div>')
 
             if message.text:
-            
+
                 at_word = write_to_output(message, output_file, output_main_file) 
                 if cropped_img:
                     file_name = at_word
@@ -497,14 +497,14 @@ async def check_file_and_send_message():
         try:
             with open("sendInfo.json", "r") as f:
                 data = f.read()
-            
+
             if data:
                 data = json.loads(data)
                 client_id = data["client_id"]
                 receiver_id = data["receiver_id"]
-                
+
                 await send_message(client_id, receiver_id, folder)
-            
+
             await asyncio.sleep(1)
         except Exception as e:
             print(e)
@@ -605,7 +605,7 @@ async def process_event(event):
                             if message1.grouped_id is None or message2.grouped_id is None:
                                 return False
                             return message1.grouped_id == message2.grouped_id
-                    
+
                     messages_to_process = []
                     messageCount = 0
                     async for message in event.client.iter_messages(event.chat_id, min_id=start_id-1, reverse=True):
@@ -614,14 +614,14 @@ async def process_event(event):
                          if (message.text and '@' in message.text):
                               messages_to_process.append(message)
                               messageCount = messageCount + 1
-                         
+
                     for i in range(len(messages_to_process) - 1):
                         if check_same_group(messages_to_process[i], messages_to_process[i + 1]):
                             messages_to_process[i], messages_to_process[i + 1] = messages_to_process[i + 1], messages_to_process[i]
-                    
+
                     with open('templates/output.html', 'a', encoding='utf-8') as f:
                         f.write(f'<div class = "len-messages"> 0 / {messageCount} </div>')
-                        
+
 
                     await asyncio.gather(*(process_message(message, index) for index, message in enumerate(messages_to_process)))
 
@@ -639,7 +639,7 @@ async def process_event(event):
                                     output_file.write(temp_file.read())
                                 # Удаляем временный файл после его использования
                                 os.remove(temp_filename)
-                                  
+
                     with open('templates/output.html', 'a', encoding='utf-8') as f:
                         f.write(f'</div> </div> </body></html>')
 
@@ -741,7 +741,7 @@ async def process_event(event):
 
                     # Переходим к следующему сообщению
                     i += 1
-                    
+
             elif event.message.is_reply and event.message.message == LINK and event.message.sender_id == me.id and LINK != "":
                     replied_message = await event.message.get_reply_message()
                     message_text = replied_message.text
@@ -806,7 +806,7 @@ async def process_event(event):
 
                         except Exception as e:
                             print(f"Ошибка при обработке ссылки: {e}")
-      
+
             isProcessing = False
     except Exception as e: 
             isProcessing = False
@@ -872,7 +872,7 @@ def run_telegram_client():
 
 def run_batch_file():
     updDir = os.getcwd()
-    
+
     # Оборачиваем путь в кавычки, чтобы избежать проблем с пробелами
     if platform.system() == 'Windows':
         command = f'"{updDir}\\update.bat"'
@@ -886,17 +886,15 @@ def run_batch_file():
     return
 
 SECRET_KEY = b'shared_secret_key'
-TIME_THRESHOLD = 5
+TIME_THRESHOLD = 10 
 
 # Функция для валидации ключа
 def validate_key(provided_key, provided_hmac, timestamp):
     try:
-        current_time = int(time.time())  # Текущее время в секундах
+        current_time = int(time.time()) 
         timestamp = int(timestamp)
-        # Проверка времени, если прошло больше времени, чем разрешено
         if abs(current_time - timestamp) > TIME_THRESHOLD:
             return False
-        # Генерация HMAC и сравнение с предоставленным HMAC
         expected_hmac = hmac.new(SECRET_KEY, (provided_key + str(timestamp)).encode(), hashlib.sha256).hexdigest()
         return hmac.compare_digest(expected_hmac, provided_hmac)
     except Exception:
@@ -912,7 +910,6 @@ if __name__ == '__main__':
         provided_hmac = sys.argv[2]
         timestamp = sys.argv[3]
         if not validate_key(provided_key, provided_hmac, timestamp):
-            print("...")
             sys.exit(1)
 
         flask_thread = threading.Thread(target=run_flask_app)
@@ -923,10 +920,9 @@ if __name__ == '__main__':
         batch_file_thread = threading.Thread(target=run_batch_file)
         batch_file_thread.daemon = True
         batch_file_thread.start()
-        
+
         # Run the Telegram client
         run_telegram_client()
-        
+
     except KeyboardInterrupt:
         print("\nInterrupted by user. Quitting...")
-    
