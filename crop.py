@@ -15,7 +15,10 @@ import hmac
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
 
-current_directory = os.path.dirname(os.path.abspath(__file__))
+if getattr(sys, 'frozen', False):
+    current_directory = os.path.dirname(sys.executable)
+else:
+    current_directory = os.path.dirname(os.path.abspath(__file__))
 
 if platform.system() == "Darwin":
     os.environ["IMAGEIO_FFMPEG_EXE"] = os.path.join(current_directory, "ffmpeg")
