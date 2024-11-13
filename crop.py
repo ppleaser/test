@@ -13,8 +13,6 @@ import re
 import time
 import hmac
 import hashlib
-import socks
-import pysocks
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 
