@@ -14,6 +14,7 @@ import time
 import hmac
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import urlparse
 
 if getattr(sys, 'frozen', False):
     current_directory = os.path.dirname(sys.executable)
@@ -815,9 +816,22 @@ async def process_event(event):
             isProcessing = False
             print(e)
 
+proxy_url = os.getenv('PROXY')
+proxy = None
+if proxy_url:
+    parsed_proxy = urlparse(proxy_url)
+    proxy = {
+        'proxy_type': 'socks5',
+        'addr': parsed_proxy.hostname,
+        'port': parsed_proxy.port,
+        'username': parsed_proxy.username,
+        'password': parsed_proxy.password,
+    }
+
+print(f"Proxy: {proxy}")
+
 async def create_client(phone, api_id, api_hash):
-    client = TelegramClient(f'session_{phone}', api_id, api_hash)
-    # Этот вызов либо восстановит сессию, если она уже существует, либо начнет новый процесс авторизации
+    client = TelegramClient(f'session_{phone}', api_id, api_hash, proxy=proxy)
     await client.start(phone)
     return client
 
