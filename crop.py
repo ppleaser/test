@@ -827,8 +827,8 @@ if proxy_url:
             'proxy_type': 'mtproto',
             'addr': parsed_proxy.hostname,
             'port': int(parsed_proxy.port) if parsed_proxy.port else None,
-            'secret': parse_qs(parsed_proxy.query).get('secret', [None])[0],
         }
+        secret = parse_qs(parsed_proxy.query).get('secret', [None])[0]
     else:
         proxy = {
             'proxy_type': parsed_proxy.scheme,
@@ -837,8 +837,14 @@ if proxy_url:
             'username': parsed_proxy.username,
             'password': parsed_proxy.password,
         }
+        secret = None
 
 print(f"Proxy: {proxy}")
+
+async def create_client(phone, api_id, api_hash, mtproto_secret=None):
+    client = TelegramClient(f'session_{phone}', api_id, api_hash, proxy=proxy, connection_parameters={'secret': mtproto_secret})
+    await client.start(phone)
+    return client
 
 async def create_client(phone, api_id, api_hash):
     client = TelegramClient(f'session_{phone}', api_id, api_hash, proxy=proxy)
