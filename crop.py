@@ -818,12 +818,13 @@ async def process_event(event):
 
 proxy_url = os.getenv('PROXY')
 proxy = None
+
 if proxy_url:
     parsed_proxy = urlparse(proxy_url)
     proxy = {
-        'proxy_type': 'socks5',
+        'proxy_type': parsed_proxy.scheme,
         'addr': parsed_proxy.hostname,
-        'port': parsed_proxy.port,
+        'port': int(parsed_proxy.port) if parsed_proxy.port else None,
         'username': parsed_proxy.username,
         'password': parsed_proxy.password,
     }
