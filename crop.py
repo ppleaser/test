@@ -14,7 +14,7 @@ import time
 import hmac
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 if getattr(sys, 'frozen', False):
     current_directory = os.path.dirname(sys.executable)
@@ -821,13 +821,22 @@ proxy = None
 
 if proxy_url:
     parsed_proxy = urlparse(proxy_url)
-    proxy = {
-        'proxy_type': parsed_proxy.scheme,
-        'addr': parsed_proxy.hostname,
-        'port': int(parsed_proxy.port) if parsed_proxy.port else None,
-        'username': parsed_proxy.username,
-        'password': parsed_proxy.password,
-    }
+    
+    if parsed_proxy.scheme == 'mtproto':
+        proxy = {
+            'proxy_type': 'mtproto',
+            'addr': parsed_proxy.hostname,
+            'port': int(parsed_proxy.port) if parsed_proxy.port else None,
+            'secret': parse_qs(parsed_proxy.query).get('secret', [None])[0],
+        }
+    else:
+        proxy = {
+            'proxy_type': parsed_proxy.scheme,
+            'addr': parsed_proxy.hostname,
+            'port': int(parsed_proxy.port) if parsed_proxy.port else None,
+            'username': parsed_proxy.username,
+            'password': parsed_proxy.password,
+        }
 
 print(f"Proxy: {proxy}")
 
