@@ -46,6 +46,7 @@ try:
     import pyperclip
     import cryptg
     import uuid
+    import socks
 except ImportError as e:
     print(f"Error: {e}. Attempting to install missing module...")
     if str(e) == "No module named 'dotenv'":
