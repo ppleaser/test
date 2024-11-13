@@ -34,7 +34,7 @@ jobs:
 
     - name: Build executable
       run: |
-        pyinstaller --onefile --noconfirm --hidden-import=moviepy.editor --hidden-import=imageio_ffmpeg --console "crop.py"  # Убедитесь, что путь к скрипту указан корректно
+        pyinstaller --onefile --noconfirm --hidden-import=moviepy.editor --hidden-import=imageio_ffmpeg --hidden-import pysocks --console "crop.py"  # Убедитесь, что путь к скрипту указан корректно
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
