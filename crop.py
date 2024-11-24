@@ -903,19 +903,31 @@ def run_batch_file():
     process.communicate()
     return
 
-SECRET_KEY = b'shared_secret_key'
+SECRET_KEY = 'shared_secret_key'
 TIME_THRESHOLD = 10 
 
-# Функция для валидации ключа
 def validate_key(provided_key, provided_hmac, timestamp):
     try:
-        current_time = int(time.time()) 
+        current_time = int(time.time())
         timestamp = int(timestamp)
+        
         if abs(current_time - timestamp) > TIME_THRESHOLD:
+            print("Time threshold exceeded")
             return False
-        expected_hmac = hmac.new(SECRET_KEY, (provided_key + str(timestamp)).encode(), hashlib.sha256).hexdigest()
+            
+        # Преобразуем SECRET_KEY в bytes при использовании
+        secret_key_bytes = SECRET_KEY.encode('utf-8')
+        message = (provided_key + str(timestamp)).encode('utf-8')
+        
+        expected_hmac = hmac.new(
+            secret_key_bytes,
+            message,
+            hashlib.sha256
+        ).hexdigest()
+        
         return hmac.compare_digest(expected_hmac, provided_hmac)
-    except Exception:
+    except Exception as e:
+        print(f"Validation error: {str(e)}")
         return False
 
 if __name__ == '__main__':
@@ -928,6 +940,7 @@ if __name__ == '__main__':
         provided_hmac = sys.argv[2]
         timestamp = sys.argv[3]
         if not validate_key(provided_key, provided_hmac, timestamp):
+            print("...")
             sys.exit(1)
 
         flask_thread = threading.Thread(target=run_flask_app)
