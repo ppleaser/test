@@ -22,7 +22,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
-        pip install moviepy==1.0.3
+        pip install moviepy
         pip install imageio_ffmpeg
         pip install telethon
         pip install flask
@@ -35,7 +35,7 @@ jobs:
 
     - name: Build executable
       run: |
-        pyinstaller --onefile --noconfirm --hidden-import=moviepy.editor --hidden-import=imageio_ffmpeg --console "crop.py"  # Обновите путь к скрипту, если необходимо
+        pyinstaller --onefile --noconfirm --hidden-import=imageio_ffmpeg --console "crop.py"  # Обновите путь к скрипту, если необходимо
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
