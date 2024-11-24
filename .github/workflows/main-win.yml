@@ -32,30 +32,9 @@ jobs:
         pip install pyperclip
         pip install cryptg
         pip install pysocks
-
     - name: Build executable
       run: |
-        pyinstaller --onefile --noconfirm  --hidden-import=moviepy.editor --hidden-import=imageio_ffmpeg --console "crop.py"
-
-    - name: Delete Old Artifacts
-      uses: actions/github-script@v6
-      id: artifact
-      with:
-        script: |
-          const res = await github.rest.actions.listArtifactsForRepo({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-          })
-
-          res.data.artifacts
-            .forEach(({ id }) => {
-              github.rest.actions.deleteArtifact({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                artifact_id: id,
-              })
-            })
-
+        pyinstaller --onefile --noconfirm  --hidden-import=moviepy.editor --hidden-import=imageio_ffmpeg --console "crop.py"  # Убедитесь, что путь к скрипту указан корректно
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
