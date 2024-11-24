@@ -15,6 +15,21 @@ import hmac
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
+from moviepy import VideoFileClip
+from telethon import TelegramClient
+from flask import Flask, render_template, url_for, request, jsonify
+from telethon import events
+from telethon.tl.types import InputPeerUser, DocumentAttributeVideo 
+from telethon.tl.functions.contacts import AddContactRequest
+from telethon.tl.functions.messages import CheckChatInviteRequest
+from telethon.tl.types import ChatInviteAlready, ChatInvite
+from dotenv import load_dotenv
+from PIL import Image,  ExifTags
+from send2trash import send2trash
+import telethon
+import pyperclip
+import cryptg
+import uuid
 
 if getattr(sys, 'frozen', False):
     current_directory = os.path.dirname(sys.executable)
@@ -23,37 +38,6 @@ else:
 
 if platform.system() == "Darwin":
     os.environ["IMAGEIO_FFMPEG_EXE"] = os.path.join(current_directory, "ffmpeg")
-
-def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-    python = sys.executable
-    subprocess.call([python, sys.argv[0]])
-    sys.exit()
-
-try:
-    from moviepy.editor import VideoFileClip
-    from telethon import TelegramClient
-    from flask import Flask, render_template, url_for, request, jsonify
-    from telethon import events
-    from telethon.tl.types import InputPeerUser, DocumentAttributeVideo 
-    from telethon.tl.functions.contacts import AddContactRequest
-    from telethon.tl.functions.messages import CheckChatInviteRequest
-    from telethon.tl.types import ChatInviteAlready, ChatInvite
-    from dotenv import load_dotenv
-    from PIL import Image,  ExifTags
-    from send2trash import send2trash
-    import telethon
-    import pyperclip
-    import cryptg
-    import uuid
-except ImportError as e:
-    print(f"Error: {e}. Attempting to install missing module...")
-    if str(e) == "No module named 'dotenv'":
-        install('python-dotenv')
-    elif str(e) == "No module named 'PIL'":
-        install('Pillow')
-    else:
-        install(e.name)
 
 sys.stdout.flush()
 # Initialize the Flask application
@@ -906,54 +890,60 @@ def run_batch_file():
 SECRET_KEY = 'shared_secret_key'
 TIME_THRESHOLD = 10 
 
-def validate_key(provided_key, provided_hmac, timestamp):
+def validate_time_based_key(provided_key: str, timestamp: str) -> bool:
     try:
+        # Convert timestamp to int and validate time threshold
         current_time = int(time.time())
-        timestamp = int(timestamp)
+        timestamp_int = int(timestamp)
         
-        if abs(current_time - timestamp) > TIME_THRESHOLD:
-            print("Time threshold exceeded")
+        if abs(current_time - timestamp_int) > TIME_THRESHOLD:
             return False
-            
-        # Преобразуем SECRET_KEY в bytes при использовании
-        secret_key_bytes = SECRET_KEY.encode('utf-8')
-        message = (provided_key + str(timestamp)).encode('utf-8')
         
-        expected_hmac = hmac.new(
-            secret_key_bytes,
-            message,
+        expected_key = hmac.new(
+            SECRET_KEY.encode('utf-8'),
+            str(timestamp_int).encode('utf-8'),
             hashlib.sha256
         ).hexdigest()
         
-        return hmac.compare_digest(expected_hmac, provided_hmac)
+        # Compare provided key with expected key
+        return hmac.compare_digest(expected_key, provided_key)
+        
     except Exception as e:
-        print(f"Validation error: {str(e)}")
+        print(f"...")
         return False
 
 if __name__ == '__main__':
     try:
-        if len(sys.argv) < 4:
-            print("Запустите скрипт через main")
+        # Проверяем количество аргументов
+        if len(sys.argv) < 3:
+            print("Запустите скрипт через main.")
             sys.exit(1)
 
+        # Получаем ключ и временную метку из аргументов
         provided_key = sys.argv[1]
-        provided_hmac = sys.argv[2]
-        timestamp = sys.argv[3]
-        if not validate_key(provided_key, provided_hmac, timestamp):
+        timestamp = sys.argv[2]
+
+        # Проверяем валидность ключа
+        if not validate_time_based_key(provided_key, timestamp):
             print("...")
             sys.exit(1)
 
+        # Запускаем Flask в отдельном потоке
         flask_thread = threading.Thread(target=run_flask_app)
         flask_thread.daemon = True
         flask_thread.start()
 
-        # Start the batch file after Flask app has started
+        # Запускаем batch file после старта Flask
         batch_file_thread = threading.Thread(target=run_batch_file)
         batch_file_thread.daemon = True
         batch_file_thread.start()
 
-        # Run the Telegram client
+        # Запускаем Telegram клиент
         run_telegram_client()
+
+    except Exception as e:
+        print(f"Ошибка запуска: {str(e)}")
+        sys.exit(1)
 
     except KeyboardInterrupt:
         print("\nInterrupted by user. Quitting...")
