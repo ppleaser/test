@@ -329,7 +329,7 @@ async def process_message(message, message_index):
 
                         clip = VideoFileClip(temp_video_path)
 
-                        trimmed_clip = clip.subclip(0, clip.duration - 1) if clip.duration > 1 else clip
+                        trimmed_clip = clip[0:clip.duration-1] if clip.duration > 1 else clip
 
                         at_word = ''
                         if message.text:
@@ -369,7 +369,7 @@ async def process_message(message, message_index):
 
                             # Обработка GIF с использованием moviepy
                             clip = VideoFileClip(gif_path)
-                            trimmed_clip = clip.subclip(0, clip.duration - 1) if clip.duration > 1 else clip
+                            trimmed_clip = clip[0:clip.duration-1] if clip.duration > 1 else clip
                             at_word = ''
                             if message.text:
                                 at_word, text = get_at_word(message)
