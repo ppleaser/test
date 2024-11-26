@@ -15,7 +15,6 @@ import hmac
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
-from moviepy import VideoFileClip
 from telethon import TelegramClient
 from flask import Flask, render_template, url_for, request, jsonify
 from telethon import events
@@ -31,13 +30,16 @@ import pyperclip
 import cryptg
 import uuid
 
-if getattr(sys, 'frozen', False):
-    current_directory = os.path.dirname(sys.executable)
-else:
-    current_directory = os.path.dirname(os.path.abspath(__file__))
+exe_path = os.path.abspath(sys.executable)
+exe_dir = os.path.dirname(exe_path)
+ffmpeg_path = os.path.join(exe_dir, "ffmpeg")
 
 if platform.system() == "Darwin":
-    os.environ["IMAGEIO_FFMPEG_EXE"] = os.path.join(current_directory, "ffmpeg")
+    print("FFMPEG path: ", ffmpeg_path)
+    os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_path
+    os.chmod(ffmpeg_path, 0o755)
+
+from moviepy import VideoFileClip
 
 sys.stdout.flush()
 # Initialize the Flask application
@@ -888,7 +890,7 @@ def run_batch_file():
     return
 
 SECRET_KEY = 'shared_secret_key'
-TIME_THRESHOLD = 10 
+TIME_THRESHOLD = 30 
 
 def validate_time_based_key(provided_key: str, timestamp: str) -> bool:
     try:
